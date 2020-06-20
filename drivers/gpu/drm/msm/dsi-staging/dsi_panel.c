@@ -2318,6 +2318,18 @@ static int dsi_panel_parse_bl_config(struct dsi_panel *panel)
 		panel->bl_config.brightness_default_level = val;
 	}
 
+#ifdef CONFIG_NUBIA_LCD_BACKLIGHT_CURVE
+	rc = of_property_read_u32_array(of_node, "nubia,mdss-dsi-panel-backlight-curve", panel->bl_config.backlight_curve,256);
+	if (rc){
+		pr_warning("%s:%d, nubia backlight curve array error reading , rc = %d\n",
+			__func__, __LINE__, rc);
+		memset(panel->bl_config.backlight_curve,-1,256);
+        }else{
+		pr_info("nubia panel->bl_config.backlight_curve[1] =  %d\n",
+			 panel->bl_config.backlight_curve[1]);
+        }
+#endif
+
 	if (panel->bl_config.type == DSI_BACKLIGHT_PWM) {
 		rc = dsi_panel_parse_bl_pwm_config(panel);
 		if (rc) {
