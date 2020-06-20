@@ -32,6 +32,7 @@
 	snd_9360: sound-pahu {
 		compatible = "qcom,sm8150-asoc-snd-pahu";
 		qcom,model = "sm8150-pahu-snd-card";
+		status = "disabled";
 
 		asoc-platform = <&pcm0>, <&pcm1>, <&pcm2>, <&voip>, <&voice>,
 				<&loopback>, <&compress>, <&hostless>,
