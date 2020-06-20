@@ -1,0 +1,5 @@
+config NUBIA_TOUCHSCREEN_HXCHIPSET
+	tristate "NUBIA HIMAX DEVICE"
+	default n
+
+source "drivers/nubia/touch/hxchipset/Kconfig"
