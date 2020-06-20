@@ -1,0 +1,27 @@
+#
+# Nubia drivers configuration
+#
+
+config NUBIA_DRIVERS
+	bool "NUBIA DRIVERS"
+	default y
+	help
+	  Say Y here if you want to enable NUBIA DRIVERS
+	  If unsure, say N.
+
+config NUBIA_FINGERPRINT
+	bool "NUBIA_FINGERPRINT"
+	default y
+	help
+	 Say Y here if you have enable NUBIA_FINGERPRINT
+	 IF  unsure ,say N
+
+config NUBIA_TOUCH
+        bool "NUBIA_TOUCH"
+        default y
+        help
+         Say Y here if you have enable NUBIA_TOUCH
+         IF  unsure ,say N
+
+source "drivers/nubia/fingerprint/Kconfig"
+source "drivers/nubia/touch/Kconfig"
