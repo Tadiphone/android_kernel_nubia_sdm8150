@@ -1,0 +1,12 @@
+config NUBIA_SENSORS
+	tristate "NUBIA SENSORS ON"
+	default n
+	help
+		nubia sensor
+
+config NUBIA_SENSORS_TMD2725
+	tristate "support litehole light/prox sensor driver"
+	depends on NUBIA_SENSORS
+	default n
+	help
+		nubia ambient&&prox device of tmd2725
