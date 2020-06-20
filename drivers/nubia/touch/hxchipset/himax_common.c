@@ -31,12 +31,12 @@ extern void himax_ic_reset(uint8_t loadconfig,uint8_t int_off);
 #if defined(HX_AUTO_UPDATE_FW)
 unsigned char i_CTPM_FW[]=
 {
-#include "NX616J_NUBIA_BOE_FW.i"
+#include "NX611_NUBIA_JDI_FW.i"
 };
 #ifdef HX_FIX_NEW_PANEL
 unsigned char i_CTPM_FW_NEW[]=
 {
-#include "NX616J_NUBIA_BOE_FW_NEW.i"
+#include "NX611_NUBIA_LEAD_FW.i"
 };
 #endif
 #endif
