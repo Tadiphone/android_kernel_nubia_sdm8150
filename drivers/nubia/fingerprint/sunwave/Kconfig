@@ -1,0 +1,5 @@
+config NUBIA_SENSORS_FP_SW6161
+       tristate "Sunwave Fingerprint"
+       default n
+       help
+          SUNWAVECORP Fingerprint
