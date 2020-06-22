@@ -18,6 +18,7 @@
 #include <linux/gpio.h>
 #include <linux/of_gpio.h>
 #include <video/mipi_display.h>
+#include <linux/msm_drm_notify.h>
 
 #include "dsi_panel.h"
 #include "dsi_ctrl_hw.h"
@@ -98,6 +99,37 @@ static char dsi_dsc_rc_range_max_qp_1_1_scr1[][15] = {
  */
 static char dsi_dsc_rc_range_bpg_offset[] = {2, 0, 0, -2, -4, -6, -8, -8,
 		-8, -10, -10, -12, -12, -12, -12};
+
+extern int get_disp_reset(void);
+
+static BLOCKING_NOTIFIER_HEAD(msm_drm_panel_notifier_list);
+
+/**
+ * msm_drm_panel_register_client - register a client notifier
+ * @nb: notifier block to callback on events
+ *
+ * This function registers a notifier callback function
+ * to msm_drm_notifier_list, which would be called when
+ * received unblank/power down event.
+ */
+int msm_drm_panel_register_client(struct notifier_block *nb)
+{
+	return blocking_notifier_chain_register(&msm_drm_panel_notifier_list,
+						nb);
+}
+
+/**
+ * msm_drm_panel_unregister_client - unregister a client notifier
+ * @nb: notifier block to callback on events
+ *
+ * This function unregisters the callback function from
+ * msm_drm_notifier_list.
+ */
+int msm_drm_panel_unregister_client(struct notifier_block *nb)
+{
+	return blocking_notifier_chain_unregister(&msm_drm_panel_notifier_list,
+						  nb);
+}
 
 int dsi_dsc_create_pps_buf_cmd(struct msm_display_dsc_info *dsc, char *buf,
 				int pps_id)
