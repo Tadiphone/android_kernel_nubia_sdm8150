@@ -23,5 +23,24 @@ config NUBIA_TOUCH
          Say Y here if you have enable NUBIA_TOUCH
          IF  unsure ,say N
 
+config MACH_NUBIA
+    bool "NUBIA device"
+    depends on ARCH_QCOM
+    help
+      Support for Nubia products
+
+config MACH_NUBIA_SM8150
+    bool "NUBIA SM8150"
+    depends on ARCH_SM8150
+    select MACH_NUBIA
+    help
+      Support for SM8150 Nubia variants
+
+config MACH_NUBIA_TP1803
+    bool "NUBIA_TP1803 board"
+    select MACH_NUBIA_SM8150
+    help
+      Support for Nubia Mini 5G variant
+
 source "drivers/nubia/fingerprint/Kconfig"
 source "drivers/nubia/touch/Kconfig"

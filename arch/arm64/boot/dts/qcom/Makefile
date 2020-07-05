@@ -324,7 +324,16 @@ dtb-$(CONFIG_ARCH_SDXPRAIRIE) += sdxprairie-rumi.dtb \
 	sa515m-ccard-usb-ep.dtb
 
 ifeq ($(CONFIG_ARM64),y)
-always		:= $(dtb-y) $(dtbo-y)
+ifeq ($(CONFIG_MACH_NUBIA_SM8150),y)
+always          += sa8155p-v2.dtb \
+	sm8150p-v2.dtb \
+	sm8150p.dtb \
+	sm8150-v2.dtb \
+	sa8155.dtb \
+	sm8150.dtb \
+	sa8155-v2.dtb \
+	sa8155p.dtb
+always          += $(dtbo-y)
 subdir-y	:= $(dts-dirs)
 else
 targets += dtbs
@@ -332,15 +341,6 @@ targets += $(addprefix ../, $(dtb-y))
 
 $(obj)/../%.dtb: $(src)/%.dts FORCE
 	$(call if_changed_dep,dtc)
-
-ifeq ($(CONFIG_BUILD_ARM64_DT_OVERLAY),y)
-$(obj)/%.dtbo:$(src)/../../../../arm64/boot/dts/qcom/%.dts FORCE
-	$(call if_changed_dep,dtc)
-	$(call if_changed,dtbo_verify)
-
-dtbs: $(addprefix $(obj)/,$(dtb-y)) $(addprefix $(obj)/,$(dtbo-y))
-else
-dtbs: $(addprefix $(obj)/../,$(dtb-y))
 endif
 endif
 clean-files	:= *.dtb *.dtbo
