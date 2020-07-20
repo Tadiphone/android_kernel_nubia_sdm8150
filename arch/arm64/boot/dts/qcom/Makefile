@@ -195,7 +195,8 @@ dtb-$(CONFIG_ARCH_SDXPRAIRIE) += sdxprairie-rumi.dtb \
 	sdxprairie-mtp.dtb
 
 ifeq ($(CONFIG_ARM64),y)
-always		:= $(dtb-y)
+#always		:= $(dtb-y)
+always          := $(NUBIA_DTS_NAME)
 subdir-y	:= $(dts-dirs)
 else
 targets += dtbs
