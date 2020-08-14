@@ -51,7 +51,7 @@
 #define NPU_MAX_STATS_BUF_SIZE 16384
 #define NPU_MAX_PATCH_NUM		160
 
-#define DCVS_MODE_MAX 100
+#define PERF_MODE_DEFAULT 0
 
 enum npu_power_level {
 	NPU_PWRLEVEL_MINSVS = 0,
@@ -102,14 +102,18 @@ struct npu_debugfs_ctx {
 	struct dentry *root;
 	uint32_t reg_off;
 	uint32_t reg_cnt;
-	char *buf;
-	size_t buf_len;
 	uint8_t *log_buf;
 	struct mutex log_lock;
 	uint32_t log_num_bytes_buffered;
 	uint32_t log_read_index;
 	uint32_t log_write_index;
 	uint32_t log_buf_size;
+};
+
+struct npu_debugfs_reg_ctx {
+	char *buf;
+	size_t buf_len;
+	struct npu_device *npu_dev;
 };
 
 struct npu_mbox {
@@ -243,6 +247,8 @@ struct npu_device {
 	struct llcc_slice_desc *sys_cache;
 	uint32_t execute_v2_flag;
 	bool cxlimit_registered;
+
+	uint32_t hw_version;
 };
 
 struct npu_kevent {

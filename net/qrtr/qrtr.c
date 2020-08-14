@@ -687,6 +687,8 @@ int qrtr_endpoint_post(struct qrtr_endpoint *ep, const void *data, size_t len)
 	struct sk_buff *skb;
 	struct qrtr_cb *cb;
 	unsigned int size;
+	int err = -ENOMEM;
+	int frag = false;
 	unsigned int ver;
 	size_t hdrlen;
 
@@ -694,8 +696,14 @@ int qrtr_endpoint_post(struct qrtr_endpoint *ep, const void *data, size_t len)
 		return -EINVAL;
 
 	skb = netdev_alloc_skb(NULL, len);
-	if (!skb)
-		return -ENOMEM;
+	if (!skb) {
+		skb = alloc_skb_with_frags(0, len, 0, &err, GFP_ATOMIC);
+		if (!skb) {
+			pr_err("%s memory allocation failed\n", __func__);
+			return -ENOMEM;
+		}
+		frag = true;
+	}
 
 	cb = (struct qrtr_cb *)skb->cb;
 
@@ -751,7 +759,13 @@ int qrtr_endpoint_post(struct qrtr_endpoint *ep, const void *data, size_t len)
 
 	__pm_wakeup_event(node->ws, 0);
 
-	skb_put_data(skb, data + hdrlen, size);
+	if (frag) {
+		skb->data_len = size;
+		skb->len = size;
+		skb_store_bits(skb, 0, data + hdrlen, size);
+	} else {
+		skb_put_data(skb, data + hdrlen, size);
+	}
 	qrtr_log_rx_msg(node, skb);
 
 	skb_queue_tail(&node->rx_queue, skb);
@@ -858,8 +872,10 @@ static void qrtr_fwd_pkt(struct sk_buff *skb, struct qrtr_cb *cb)
 	struct qrtr_node *node;
 
 	node = qrtr_node_lookup(cb->dst_node);
-	if (!node)
+	if (!node) {
+		kfree_skb(skb);
 		return;
+	}
 
 	qrtr_node_enqueue(node, skb, cb->type, &from, &to, 0);
 	qrtr_node_release(node);
@@ -906,8 +922,11 @@ static void qrtr_node_rx_work(struct kthread_work *work)
 			if (!ipc) {
 				kfree_skb(skb);
 			} else {
-				if (sock_queue_rcv_skb(&ipc->sk, skb))
+				if (sock_queue_rcv_skb(&ipc->sk, skb)) {
+					pr_err("%s qrtr pkt dropped flow[%d]\n",
+					       __func__, cb->confirm_rx);
 					kfree_skb(skb);
+				}
 
 				qrtr_port_put(ipc);
 			}
@@ -1411,20 +1430,21 @@ static int qrtr_sendmsg(struct socket *sock, struct msghdr *msg, size_t len)
 	node = NULL;
 	srv_node = NULL;
 	if (addr->sq_node == QRTR_NODE_BCAST) {
-		enqueue_fn = qrtr_bcast_enqueue;
-		if (addr->sq_port != QRTR_PORT_CTRL) {
+		if (addr->sq_port != QRTR_PORT_CTRL &&
+		    qrtr_local_nid != QRTR_NODE_BCAST) {
 			release_sock(sk);
 			return -EINVAL;
 		}
+		enqueue_fn = qrtr_bcast_enqueue;
 	} else if (addr->sq_node == ipc->us.sq_node) {
 		enqueue_fn = qrtr_local_enqueue;
 	} else {
-		enqueue_fn = qrtr_node_enqueue;
 		node = qrtr_node_lookup(addr->sq_node);
 		if (!node) {
 			release_sock(sk);
 			return -ECONNRESET;
 		}
+		enqueue_fn = qrtr_node_enqueue;
 
 		if (ipc->state > QRTR_STATE_INIT && ipc->state != node->nid)
 			ipc->state = QRTR_STATE_MULTI;

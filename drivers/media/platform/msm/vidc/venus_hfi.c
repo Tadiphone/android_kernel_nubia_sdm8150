@@ -44,6 +44,7 @@
 #define FIRMWARE_SIZE			0X00A00000
 #define REG_ADDR_OFFSET_BITMASK	0x000FFFFF
 #define QDSS_IOVA_START 0x80001000
+#define MIN_PAYLOAD_SIZE 3
 
 static struct hal_device_data hal_ctxt;
 
@@ -3464,12 +3465,35 @@ static void __flush_debug_queue(struct venus_hfi_device *device, u8 *packet)
 		log_level = VIDC_ERR;
 	}
 
+#define SKIP_INVALID_PKT(pkt_size, payload_size, pkt_hdr_size) ({ \
+		if (pkt_size < pkt_hdr_size || \
+			payload_size < MIN_PAYLOAD_SIZE || \
+			payload_size > \
+			(pkt_size - pkt_hdr_size + sizeof(u8))) { \
+			dprintk(VIDC_ERR, \
+				"%s: invalid msg size - %d\n", \
+				__func__, pkt->msg_size); \
+			continue; \
+		} \
+	})
+
 	while (!__iface_dbgq_read(device, packet)) {
-		struct hfi_msg_sys_coverage_packet *pkt =
-			(struct hfi_msg_sys_coverage_packet *) packet;
+		struct hfi_packet_header *pkt =
+			(struct hfi_packet_header *) packet;
+
+		if (pkt->size < sizeof(struct hfi_packet_header)) {
+			dprintk(VIDC_ERR, "Invalid pkt size - %s\n",
+				__func__);
+			continue;
+		}
 
 		if (pkt->packet_type == HFI_MSG_SYS_COV) {
+			struct hfi_msg_sys_coverage_packet *pkt =
+				(struct hfi_msg_sys_coverage_packet *) packet;
 			int stm_size = 0;
+
+			SKIP_INVALID_PKT(pkt->size,
+				pkt->msg_size, sizeof(*pkt));
 
 			stm_size = stm_log_inv_ts(0, 0,
 				pkt->rg_msg_data, pkt->msg_size);
@@ -3477,9 +3501,14 @@ static void __flush_debug_queue(struct venus_hfi_device *device, u8 *packet)
 				dprintk(VIDC_ERR,
 					"In %s, stm_log returned size of 0\n",
 					__func__);
-		} else {
+
+		} else if (pkt->packet_type == HFI_MSG_SYS_DEBUG) {
 			struct hfi_msg_sys_debug_packet *pkt =
 				(struct hfi_msg_sys_debug_packet *) packet;
+
+			SKIP_INVALID_PKT(pkt->size,
+				pkt->msg_size, sizeof(*pkt));
+
 			/*
 			 * All fw messages starts with new line character. This
 			 * causes dprintk to print this message in two lines
@@ -3487,9 +3516,11 @@ static void __flush_debug_queue(struct venus_hfi_device *device, u8 *packet)
 			 * from the message fixes this to print it in a single
 			 * line.
 			 */
+			pkt->rg_msg_data[pkt->msg_size-1] = '\0';
 			dprintk(log_level, "%s", &pkt->rg_msg_data[1]);
 		}
 	}
+#undef SKIP_INVALID_PKT
 
 	if (local_packet)
 		kfree(packet);
@@ -4012,11 +4043,8 @@ static inline void __unprepare_ahb2axi_bridge(struct venus_hfi_device *device,
 	if (version != (0x5 << 28 | 0x10 << 16))
 		return;
 
-	if (!(device->intr_status & VIDC_WRAPPER_INTR_STATUS_A2HWD_BMSK))
-		return;
-
 	dprintk(VIDC_ERR,
-		"reset axi cbcr to recover from hung\n");
+		"reset axi cbcr to recover\n");
 
 	/* read registers */
 	axi0_cbcr_status = __read_gcc_register(device, VIDEO_GCC_AXI0_CBCR);
@@ -4769,7 +4797,8 @@ fail_vote_buses:
 	return rc;
 }
 
-static void __venus_power_off(struct venus_hfi_device *device)
+static void __venus_power_off(struct venus_hfi_device *device,
+				bool axi_reset)
 {
 	u32 version;
 
@@ -4779,11 +4808,13 @@ static void __venus_power_off(struct venus_hfi_device *device)
 	if (!(device->intr_status & VIDC_WRAPPER_INTR_STATUS_A2HWD_BMSK))
 		disable_irq_nosync(device->hal_data->irq);
 
-	version = __read_register(device, VIDC_WRAPPER_HW_VERSION);
+	if (axi_reset)
+		version = __read_register(device, VIDC_WRAPPER_HW_VERSION);
 
 	__disable_unprepare_clks(device);
 
-	__unprepare_ahb2axi_bridge(device, version);
+	if (axi_reset)
+		__unprepare_ahb2axi_bridge(device, version);
 
 	device->intr_status = 0;
 
@@ -4821,7 +4852,7 @@ static inline int __suspend(struct venus_hfi_device *device)
 
 	__disable_subcaches(device);
 
-	__venus_power_off(device);
+	__venus_power_off(device, false);
 	dprintk(VIDC_PROF, "Venus power off\n");
 	return rc;
 
@@ -4896,7 +4927,7 @@ exit:
 err_reset_core:
 	__tzbsp_set_video_state(TZBSP_VIDEO_STATE_SUSPEND);
 err_set_video_state:
-	__venus_power_off(device);
+	__venus_power_off(device, false);
 err_venus_power_on:
 	dprintk(VIDC_ERR, "Failed to resume from power collapse\n");
 	return rc;
@@ -4955,7 +4986,7 @@ fail_protect_mem:
 		subsystem_put(device->resources.fw.cookie);
 	device->resources.fw.cookie = NULL;
 fail_load_fw:
-	__venus_power_off(device);
+	__venus_power_off(device, true);
 fail_venus_power_on:
 fail_init_pkt:
 	__deinit_resources(device);
@@ -4976,7 +5007,7 @@ static void __unload_fw(struct venus_hfi_device *device)
 	__vote_buses(device, NULL, 0);
 	subsystem_put(device->resources.fw.cookie);
 	__interface_queues_release(device);
-	__venus_power_off(device);
+	__venus_power_off(device, true);
 	device->resources.fw.cookie = NULL;
 	__deinit_resources(device);
 

@@ -46,7 +46,7 @@
 #define IPA_V4_0_CLK_RATE_NOMINAL (220 * 1000 * 1000UL)
 #define IPA_V4_0_CLK_RATE_TURBO (250 * 1000 * 1000UL)
 
-#define IPA_V3_0_MAX_HOLB_TMR_VAL (4294967296 - 1)
+#define IPA_MAX_HOLB_TMR_VAL (4294967296 - 1)
 
 #define IPA_V3_0_BW_THRESHOLD_TURBO_MBPS (1000)
 #define IPA_V3_0_BW_THRESHOLD_NOMINAL_MBPS (600)
@@ -5422,6 +5422,7 @@ int ipa3_controller_static_bind(struct ipa3_controller *ctrl,
 	ctrl->ipa_init_sram = _ipa_init_sram_v3;
 	ctrl->ipa_sram_read_settings = _ipa_sram_settings_read_v3_0;
 	ctrl->ipa_init_hdr = _ipa_init_hdr_v3_0;
+	ctrl->max_holb_tmr_val = IPA_MAX_HOLB_TMR_VAL;
 
 	if (ipa3_ctx->ipa_hw_type >= IPA_HW_v4_0)
 		ctrl->ipa3_read_ep_reg = _ipa_read_ep_reg_v4_0;
@@ -6715,15 +6716,19 @@ static int __ipa3_stop_gsi_channel(u32 clnt_hdl)
 			ep->gsi_chan_hdl, res);
 		if (res != -GSI_STATUS_AGAIN && res != -GSI_STATUS_TIMED_OUT)
 			return res;
-
-		IPADBG("Inject a DMA_TASK with 1B packet to IPA\n");
-		/* Send a 1B packet DMA_TASK to IPA and try again */
-		res = ipa3_inject_dma_task_for_gsi();
-		if (res) {
-			IPAERR("Failed to inject DMA TASk for GSI\n");
-			return res;
+		/*
+		 * From >=IPA4.0 version not required to send dma send command,
+		 * this issue was fixed in latest versions.
+		 */
+		if (ipa3_ctx->ipa_hw_type < IPA_HW_v4_0) {
+			IPADBG("Inject a DMA_TASK with 1B packet to IPA\n");
+			/* Send a 1B packet DMA_TASK to IPA and try again */
+			res = ipa3_inject_dma_task_for_gsi();
+			if (res) {
+				IPAERR("Failed to inject DMA TASk for GSI\n");
+				return res;
+			}
 		}
-
 		/* sleep for short period to flush IPA */
 		usleep_range(IPA_GSI_CHANNEL_STOP_SLEEP_MIN_USEC,
 			IPA_GSI_CHANNEL_STOP_SLEEP_MAX_USEC);
@@ -6836,6 +6841,49 @@ void ipa3_suspend_apps_pipes(bool suspend)
 				res = gsi_start_channel(ep->gsi_chan_hdl);
 				if (res) {
 					IPAERR("failed to start WAN channel\n");
+					ipa_assert();
+				}
+			}
+		} else {
+			ipa3_cfg_ep_ctrl(ipa_ep_idx, &cfg);
+		}
+		if (suspend)
+			ipa3_gsi_poll_after_suspend(ep);
+	}
+
+	ipa_ep_idx = ipa_get_ep_mapping(IPA_CLIENT_ODL_DPL_CONS);
+	/* Considering the case for SSR. */
+	if (ipa_ep_idx == -1) {
+		IPADBG("Invalid mapping for IPA_CLIENT_ODL_DPL_CONS\n");
+		return;
+	}
+	ep = &ipa3_ctx->ep[ipa_ep_idx];
+	if (ep->valid) {
+		IPADBG("%s pipe %d\n", suspend ? "suspend" : "unsuspend",
+			ipa_ep_idx);
+		/*
+		 * move the channel to callback mode.
+		 * This needs to happen before starting the channel to make
+		 * sure we don't loose any interrupt
+		 */
+		if (!suspend && !atomic_read(&ep->sys->curr_polling_state))
+			gsi_config_channel_mode(ep->gsi_chan_hdl,
+			GSI_CHAN_MODE_CALLBACK);
+		if (ipa3_ctx->ipa_hw_type >= IPA_HW_v4_0) {
+			if (suspend) {
+				res = __ipa3_stop_gsi_channel(ipa_ep_idx);
+				if (res) {
+					IPAERR("failed to stop ODL channel\n");
+					ipa_assert();
+				}
+			} else if (!atomic_read(&ipa3_ctx->is_ssr)) {
+				/* If SSR was alreday started not required to
+				 * start WAN channel,Because in SSR will stop
+				 * channel and reset the channel.
+				 */
+				res = gsi_start_channel(ep->gsi_chan_hdl);
+				if (res) {
+					IPAERR("failed to start ODL channel\n");
 					ipa_assert();
 				}
 			}
