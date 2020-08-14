@@ -213,4 +213,6 @@ targets += $(addprefix ../, $(dtb-y))
 $(obj)/../%.dtb: $(src)/%.dts FORCE
 	$(call if_changed_dep,dtc)
 endif
+endif
 clean-files	:= *.dtb *.dtbo
+
