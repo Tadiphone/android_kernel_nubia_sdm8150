@@ -16,64 +16,77 @@
  * VERSION = "1.0"
  *---------------------------------------------------------------------------*/
 &mdss_mdp {
-qcom,mdss_dsi_lead_hx83112a_1080_2160_5p65_video {
-				qcom,mdss-dsi-panel-name = "lead hx83112a 1080 2160 5p65 video dsi panel";
-				qcom,mdss-dsi-panel-type = "dsi_video_mode";
-				qcom,mdss-dsi-virtual-channel-id = <0x00>;
-				qcom,mdss-dsi-stream = <0x00>;
-				qcom,mdss-dsi-bpp = <0x18>;
-				qcom,mdss-dsi-underflow-color = <0xff>;
-				qcom,mdss-dsi-border-color = <0x00>;
-				qcom,mdss-dsi-traffic-mode = "burst_mode";
-				qcom,mdss-dsi-bllp-eof-power-mode;
-				qcom,mdss-dsi-bllp-power-mode;
-				qcom,mdss-dsi-lane-0-state;
-				qcom,mdss-dsi-lane-1-state;
-				qcom,mdss-dsi-lane-2-state;
-				qcom,mdss-dsi-lane-3-state;
-				qcom,mdss-dsi-dma-trigger = "trigger_sw";
-				qcom,mdss-dsi-mdp-trigger = "none";
-				qcom,mdss-dsi-reset-sequence = <0x00 0x01 0x01 0x19>;
-				qcom,mdss-dsi-tx-eot-append;
-				qcom,mdss-dsi-post-init-delay = <0x01>;
-				qcom,panel-supply-entries = <0x9f>;
-				qcom,mdss-dsi-bl-pmic-control-type = "bl_ctrl_wled";
-				qcom,mdss-dsi-bl-min-level = <0x01>;
-				qcom,mdss-dsi-bl-max-level = <0xfff>;
-				qcom,mdss-brightness-max-level = <0xfff>;
-				qcom,mdss-dsi-mode-sel-gpio-state = "single_port";
-				qcom,panel-mode-gpio = <0xffffffff 0x07 0x00>;
-				qcom,platform-te-gpio = <0xffffffff 0x08 0x00>;
-				qcom,platform-reset-gpio = <0xffffffff 0x06 0x00>;
-				phandle = <0xa0>;
-				qcom,mdss-dsi-display-timings {
-					timing@0 {
-						qcom,mdss-dsi-panel-phy-timings = [00 1e 08 07 24 22 08 08 05 02 04 00 19 17];
-						qcom,display-topology = <0x01 0x00 0x01>;
-						qcom,default-topology-index = <0x00>;
-						qcom,mdss-dsi-min-refresh-rate = <0x35>;
-						qcom,mdss-dsi-virtual-channel-id = <0x00>;
-						qcom,mdss-dsi-stream = <0x00>;
-						qcom,mdss-dsi-panel-width = <0x438>;
-						qcom,mdss-dsi-panel-height = <0x870>;
-						qcom,mdss-dsi-h-front-porch = <0x20>;
-						qcom,mdss-dsi-h-back-porch = <0x10>;
-						qcom,mdss-dsi-h-pulse-width = <0x02>;
-						qcom,mdss-dsi-h-sync-skew = <0x00>;
-						qcom,mdss-dsi-h-sync-pulse = <0x00>;
-						qcom,mdss-dsi-v-back-porch = <0x02>;
-						qcom,mdss-dsi-v-front-porch = <0x20>;
-						qcom,mdss-dsi-v-pulse-width = <0x02>;
-						qcom,mdss-dsi-panel-framerate = <0x3c>;
-						qcom,mdss-dsi-h-left-border = <0x00>;
-						qcom,mdss-dsi-h-right-border = <0x00>;
-						qcom,mdss-dsi-v-top-border = <0x00>;
-						qcom,mdss-dsi-v-bottom-border = <0x00>;
-						qcom,mdss-dsi-on-command = <0x39010000 0x4b9 0x83112a39 0x1000000 0x3510f 0xff390100 0x03 0x5e000015 0x1000000 0x25500 0x15010000 0x253 0x24150100 0x02 0x35000501 0x00 0x2112905 0x1000034 0x22900>;
-						qcom,mdss-dsi-off-command = <0x5010000 0x20000128 0x5010000 0x2000110>;
-						qcom,mdss-dsi-on-command-state = "dsi_lp_mode";
-						qcom,mdss-dsi-off-command-state = "dsi_hs_mode";
-					};
-				};
+	dsi_lead_hx83112a_1080_2160_5p65_video: qcom,mdss_dsi_lead_hx83112a_1080_2160_5p65_video {
+		qcom,mdss-dsi-panel-name = "lead hx83112a 1080 2160 5p65 video dsi panel";
+		qcom,mdss-dsi-panel-type = "dsi_video_mode";
+		qcom,mdss-dsi-virtual-channel-id = <0>;
+		qcom,mdss-dsi-stream = <0>;
+		qcom,mdss-dsi-bpp = <24>;
+		qcom,mdss-dsi-underflow-color = <0xff>;
+		qcom,mdss-dsi-border-color = <0>;
+		qcom,mdss-dsi-traffic-mode = "burst_mode";
+		qcom,mdss-dsi-bllp-eof-power-mode;
+		qcom,mdss-dsi-bllp-power-mode;
+		qcom,mdss-dsi-lane-0-state;
+		qcom,mdss-dsi-lane-1-state;
+		qcom,mdss-dsi-lane-2-state;
+		qcom,mdss-dsi-lane-3-state;
+		qcom,mdss-dsi-dma-trigger = "trigger_sw";
+		qcom,mdss-dsi-mdp-trigger = "none";
+		qcom,mdss-dsi-reset-sequence = <0 1>, <1 25>;
+		qcom,mdss-dsi-tx-eot-append;
+		qcom,mdss-dsi-post-init-delay = <1>;
+		qcom,panel-supply-entries = <&nubia_dsi_panel_pwr_supply>;
+		qcom,mdss-dsi-bl-pmic-control-type = "bl_ctrl_wled";
+		qcom,mdss-dsi-bl-min-level = <1>;
+		qcom,mdss-dsi-bl-max-level = <4095>;
+		qcom,mdss-brightness-max-level = <4095>;
+		qcom,mdss-dsi-mode-sel-gpio-state = "single_port";
+		qcom,panel-mode-gpio = <&tlmm 7 0>;
+		qcom,platform-te-gpio = <&tlmm 8 0>;
+		qcom,platform-reset-gpio = <&tlmm 6 0>;
+		qcom,mdss-dsi-display-timings {
+			timing@0{
+				qcom,mdss-dsi-panel-phy-timings = [00 1e 08 07 24 22
+					08 08 05 02 04 00 19 17];
+				qcom,display-topology = <1 0 1>;
+				qcom,default-topology-index = <0>;
+				qcom,mdss-dsi-min-refresh-rate = <53>;
+				qcom,mdss-dsi-virtual-channel-id = <0>;
+				qcom,mdss-dsi-stream = <0>;
+				qcom,mdss-dsi-panel-width = <1080>;
+				qcom,mdss-dsi-panel-height = <2160>;
+				qcom,mdss-dsi-h-front-porch = <32>;
+				qcom,mdss-dsi-h-back-porch = <16>;
+				qcom,mdss-dsi-h-pulse-width = <2>;
+				qcom,mdss-dsi-h-sync-skew = <0>;
+				qcom,mdss-dsi-h-sync-pulse = <0>;
+				qcom,mdss-dsi-v-back-porch = <2>;
+				qcom,mdss-dsi-v-front-porch = <32>;
+				qcom,mdss-dsi-v-pulse-width = <2>;
+				qcom,mdss-dsi-panel-framerate = <60>;
+				qcom,mdss-dsi-h-left-border = <0>;
+				qcom,mdss-dsi-h-right-border = <0>;
+				qcom,mdss-dsi-v-top-border = <0>;
+				qcom,mdss-dsi-v-bottom-border = <0>;
+
+				qcom,mdss-dsi-on-command = [
+					39 01 00 00 00 00 04 b9 83 11 2a
+					39 01 00 00 00 00 03 51 0f ff
+					39 01 00 00 00 00 03 5e 00 00
+					15 01 00 00 00 00 02 55 00
+					15 01 00 00 00 00 02 53 24
+					15 01 00 00 00 00 02 35 00
+					05 01 00 00 00 00 02 11 29
+					05 01 00 00 34 00 02 29 00];
+				qcom,mdss-dsi-off-command = [
+					//set display off
+					05 01 00 00 20 00 01 28
+					//enter sleep mode
+					05 01 00 00 02 00 01 10];
+				qcom,mdss-dsi-on-command-state = "dsi_lp_mode";
+				qcom,mdss-dsi-off-command-state = "dsi_hs_mode";
 			};
 		};
+	};
+};

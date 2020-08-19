@@ -3,97 +3,63 @@
  */
 
 &spmi_bus {
-	qcom,pm8150@0 {
-		qcom,power-on@800 {
-			qcom,pon_1 {
-				qcom,support-reset = <1>;
-				qcom,s1-timer = <10256>;
-				qcom,s2-timer = <2000>;
-				qcom,s2-type = <7>;
-			};
-		};
-	};
+        qcom,pm8150@0 {
+                qcom,power-on@800 {
+                        qcom,pon_1 {
+                                qcom,support-reset = <1>;
+                                qcom,s1-timer = <10256>;
+                                qcom,s2-timer = <2000>;
+                                qcom,s2-type = <7>;
+                        };
+                };
+        };
 };
 
-/* pstore mem*/
-&reserved_memory {
-	pstore_reserve_mem: pstore_reserve_mem_region@0 {
-		linux,reserve-contiguous-region;
-		linux,reserve-region;
-		linux,remove-completely;
-		reg = <0x0 0xAff00000 0x0 0x00100000>;
-		label = "pstore_reserve_mem";
-	};
+&wdog {
+        qcom,bark-time = <20000>;
+        qcom,pet-time = <15000>;
 };
 
 &tlmm {
-	nubia_gpio {
-		nubia_gpio_default: nubia_gpio_default {
-			mux {
-				pins = "gpio41", "gpio42", "gpio47", "gpio48", "gpio71", "gpio72";
-				function = "gpio";
-			};
-			config {
-				pins = "gpio41", "gpio42", "gpio47", "gpio48", "gpio71", "gpio72";
-				driver-strength = <2>; /* 2mA */
-				bias-pull-up;
-				input-enable;
-			};
-		};
+        nubia_gpio {
+                nubia_gpio_default: nubia_gpio_default {
+                        mux {
+                                pins = "gpio41", "gpio42", "gpio47", "gpio48", "gpio71", "gpio72";
+                                function = "gpio";
+                        };
+                        config {
+                                pins = "gpio41", "gpio42", "gpio47", "gpio48", "gpio71", "gpio72";
+                                driver-strength = <2>; /* 2mA */
+                                bias-pull-up;
+                                input-enable;
+                        };
+                };
 
-		nubia_gpio_pulldown: nubia_gpio_pulldown {
-			mux {
-				pins = "gpio41", "gpio42", "gpio47", "gpio48", "gpio71", "gpio72";
-				function = "gpio";
-			};
-			config {
-				pins = "gpio41", "gpio42", "gpio47", "gpio48", "gpio71", "gpio72";
-				driver-strength = <2>; /* 2mA */
-				bias-pull-down;
-				input-enable;
-			};
-		};
-	};
+                nubia_gpio_pulldown: nubia_gpio_pulldown {
+                        mux {
+                                pins = "gpio41", "gpio42", "gpio47", "gpio48", "gpio71", "gpio72";
+                                function = "gpio";
+                        };
+                        config {
+                                pins = "gpio41", "gpio42", "gpio47", "gpio48", "gpio71", "gpio72";
+                                driver-strength = <2>; /* 2mA */
+                                bias-pull-down;
+                                input-enable;
+                        };
+                };
+        };
 };
-
 &soc {
-	nubia_hw_ver_gpio: nubia_hw_gpio_ctrl {
-		compatible = "nubia_hw_gpio_ctrl";
-		qcom,pcb-gpio1 = <&tlmm 41 0x00>;
-		qcom,pcb-gpio2 = <&tlmm 42 0x00>;
-		qcom,rf-gpio1 = <&tlmm 47 0x00>;
-		qcom,rf-gpio2 = <&tlmm 48 0x00>;
-		qcom,config-gpio1 = <&tlmm 71 0x00>;
-		qcom,config-gpio2 = <&tlmm 72 0x00>;
-		pinctrl-names = "pull_up_default","pull_down_default";
-		pinctrl-0 = <&nubia_gpio_default>;
-		pinctrl-1 = <&nubia_gpio_pulldown>;
-	};
-		
-	voice_key_default {
-		mux {
-			pins = "gpio24";
-			function = "gpio";
-		};
-
-		config {
-			pins = "gpio24";
-			drive-strength = <0x02>;
-			bias-pull-up;
-		};
-	};
-
-	gpio_keys {
-		compatible = "gpio-keys";
-		label = "gpio-keys";
-		pinctrl-0 = <0x6b 0xa2>;
-		voice_key {
-			label = "voice_key";
-			gpios = <&tlmm 24 1>;
-			linux,input-type = <1>;
-			linux,code = <216>;
-			debounce-interval = <15>;
-			gpio-key,wakeup;
-		};
-	};
+        nubia_hw_ver_gpio: nubia_hw_gpio_ctrl {
+                compatible = "nubia_hw_gpio_ctrl";
+                qcom,pcb-gpio1 = <&tlmm 41 0x00>;
+                qcom,pcb-gpio2 = <&tlmm 42 0x00>;
+                qcom,rf-gpio1 = <&tlmm 47 0x00>;
+                qcom,rf-gpio2 = <&tlmm 48 0x00>;
+                qcom,config-gpio1 = <&tlmm 71 0x00>;
+                qcom,config-gpio2 = <&tlmm 72 0x00>;
+                pinctrl-names = "pull_up_default","pull_down_default";
+                pinctrl-0 = <&nubia_gpio_default>;
+                pinctrl-1 = <&nubia_gpio_pulldown>;
+        };
 };

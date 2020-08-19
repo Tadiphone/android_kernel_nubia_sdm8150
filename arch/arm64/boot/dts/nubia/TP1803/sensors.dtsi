@@ -11,6 +11,11 @@
  * GNU General Public License for more details.
  */
 
+
+/*
+ * Add nubia sensors
+ */
+
 &qupv3_se9_i2c {
 	/delete-node/ nubia@39;
 };
@@ -22,9 +27,8 @@
 		reg = <0x39>;
 		interrupt-parent = <&tlmm>;
 		interrupts = <117 0>;
-		vdd-supply = <&pm8150l_l7>;
-		//vio-supply = <&pm8998_s4>;
-		vio-supply = <&pm8150l_l8>;
+		vdd-supply = <&pm8150l_l7>;//3.0 LEDA
+		vio-supply = <&pm8150l_l8>;//1.8 IIC_SDA_PULL IIC_SCL_PULL VDD
 		tmd,irq-gpio = <&tlmm 117 0x00>;
 		pinctrl-names = "tmd2725_default","tmd2725_sleep";
 		pinctrl-0 = <&tmd2725_default>;
@@ -40,11 +44,6 @@
 		//[module_id] [which_seg] [d_factor] ch0[1] ch1[0] ch0[1] ch1[0]
 		tmd,tp2 = "2","0","652","1000","142","874","99";
 	};
-};
-
-&pm8150_s4 {
-	status = "ok";
-	regulator-boot-on;
 };
 
 &pm8150l_l8 {

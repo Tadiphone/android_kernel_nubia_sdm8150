@@ -585,7 +585,7 @@
 					dev = "/dev/block/platform/soc/8804000.sdhci/by-name/vendor";
 					type = "ext4";
 					mnt_flags = "ro,barrier=1,discard";
-					fsmgr_flags = "wait,avb";
+					fsmgr_flags = "wait";
 					status = "ok";
 				};
 				vm-linux {
@@ -771,6 +771,17 @@
 			compatible = "shared-dma-pool";
 			reusable;
 			size = <0 0x2400000>;
+		};
+
+		ramoops: ramoops@0xA9800000 {
+			compatible = "ramoops";
+			reg = <0 0xA9800000 0 0x00400000>;
+			record-size =  <0x40000>; //256x1024
+			console-size = <0x40000>;
+			ftrace-size =  <0x40000>;
+			pmsg-size=	   <0x200000>;
+			devinfo-size=  <0x01000>;
+			ecc-size=	   <0x0>;
 		};
 
 		/* global autoconfigured region for contiguous allocations */
@@ -1344,11 +1355,6 @@
 		pil@94c {
 			compatible = "qcom,msm-imem-pil";
 			reg = <0x94c 200>;
-		};
-
-		minidump_debug@b0c {
-			compatible = "qcom,msm-imem-minidump-debug";
-			reg = <0xb0c 0x4>;
 		};
 
 		diag_dload@c8 {

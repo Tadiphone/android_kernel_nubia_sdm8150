@@ -2,14 +2,6 @@
 	qcom,wsa-max-devs = <0>;
 };
 
-tfa98xx@34 {
-	status = "ok";
-	compatible = "nxp,tfa98xx";
-	reg =<0x34>;
-	reset-gpio = <&tlmm 100 0x00>;
-	irq-gpio = <&tlmm 96 0x00>;
-};
-
 &snd_934x {
 	qcom,audio-routing = 
 		"AIF4 VI", "MCLK", 

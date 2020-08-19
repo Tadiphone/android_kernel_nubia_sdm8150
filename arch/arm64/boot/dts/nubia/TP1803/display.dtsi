@@ -1,61 +1,78 @@
-&soc {
-	nubia_dsi_panel_pwr_supply: nubia_dsi_panel_pwr_supply {
-			#address-cells = <0x01>;
-			#size-cells = <0x00>;
-			
-			qcom,panel-supply-entry@0 {
-				reg = <0x00>;
-				qcom,supply-name = "vddio";
-				qcom,supply-min-voltage = <0x1b7740>;
-				qcom,supply-max-voltage = <0x1b7740>;
-				qcom,supply-enable-load = <0xf230>;
-				qcom,supply-disable-load = <0x50>;
-				qcom,supply-post-on-sleep = <0x02>;
-			};
+/*
+*    add nubia display
+*/
 
-			qcom,panel-supply-entry@1 {
-				reg = <0x01>;
-				qcom,supply-name = "lab";
-				qcom,supply-min-voltage = <0x53ec60>;
-				qcom,supply-max-voltage = <0x53ec60>;
-				qcom,supply-enable-load = <0x186a0>;
-				qcom,supply-disable-load = <0x64>;
-				qcom,supply-post-on-sleep = <0x02>;
-				qcom,supply-pre-off-sleep = <0x02>;
-			};
+#include "nubia-jdi-hx83112a-1080-2160-5p65-video.dtsi"
+#include "nubia-lead-hx83112a-1080-2160-5p65-video.dtsi"
 
-			qcom,panel-supply-entry@2 {
-				reg = <0x02>;
-				qcom,supply-name = "ibb";
-				qcom,supply-min-voltage = <0x53ec60>;
-				qcom,supply-max-voltage = <0x53ec60>;
-				qcom,supply-enable-load = <0x186a0>;
-				qcom,supply-disable-load = <0x64>;
-				qcom,supply-post-on-sleep = <0x02>;
-				qcom,supply-pre-off-sleep = <0x02>;
-			};
-	};
-
-			dsi_lead_hx83112a_1080_2160_5p65_video_display: qcom,dsi-display@23 {
-				label = "dsi_lead_hx83112a_1080_2160_5p65_video_display";
-				qcom,display-type = "primary";
-				qcom,dsi-ctrl-num = <0>;
-				qcom,dsi-phy-num = <0>;
-				qcom,dsi-select-clocks = "mux_byte_clk0", "mux_pixel_clk0";
-				qcom,dsi-panel = <0xa0>;
-			};
-			dsi_jdi_hx83112a_1080_2160_5p65_video_display: qcom,dsi-display@24 {
-				label = "dsi_jdi_hx83112a_1080_2160_5p65_video_display";
-				qcom,display-type = "primary";
-				qcom,dsi-ctrl-num = <0>;
-				qcom,dsi-phy-num = <0>;
-				qcom,dsi-select-clocks = "mux_byte_clk0", "mux_pixel_clk0";
-				qcom,dsi-panel = <0xa1>;
-			};
+&dsi_sharp_4k_dsc_cmd_display {
+	/delete-property/ qcom,dsi-display-active;
 };
 
-&sde_dsi{
-		qcom,dsi-display-list =
-			<&dsi_lead_hx83112a_1080_2160_5p65_video_display
-			dsi_jdi_hx83112a_1080_2160_5p65_video_display>;
+&soc {
+	nubia_dsi_panel_pwr_supply: nubia_dsi_panel_pwr_supply {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		qcom,panel-supply-entry@0 {
+			reg = <0>;
+			qcom,supply-name = "vddio";
+			qcom,supply-min-voltage = <1800000>;
+			qcom,supply-max-voltage = <1800000>;
+			qcom,supply-enable-load = <62000>;
+			qcom,supply-disable-load = <80>;
+			qcom,supply-post-on-sleep = <2>;
+		};
+
+		qcom,panel-supply-entry@1 {
+			reg = <1>;
+			qcom,supply-name = "lab";
+			qcom,supply-min-voltage = <5500000>;
+			qcom,supply-max-voltage = <5500000>;
+			qcom,supply-enable-load = <100000>;
+			qcom,supply-disable-load = <100>;
+			qcom,supply-post-on-sleep = <2>;
+			qcom,supply-pre-off-sleep = <2>;
+		};
+
+		qcom,panel-supply-entry@2 {
+			reg = <2>;
+			qcom,supply-name = "ibb";
+			qcom,supply-min-voltage = <5500000>;
+			qcom,supply-max-voltage = <5500000>;
+			qcom,supply-enable-load = <100000>;
+			qcom,supply-disable-load = <100>;
+			qcom,supply-post-on-sleep = <2>;
+			qcom,supply-pre-off-sleep = <2>;
+		};
+	};
+
+	dsi_lead_hx83112a_1080_2160_5p65_video_display: qcom,dsi-display@23 {
+		label = "dsi_lead_hx83112a_1080_2160_5p65_video_display";
+		qcom,display-type = "primary";
+
+		qcom,dsi-ctrl-num = <0>;
+		qcom,dsi-phy-num = <0>;
+		qcom,dsi-select-clocks = "mux_byte_clk0", "mux_pixel_clk0";
+
+		qcom,dsi-panel = <&dsi_lead_hx83112a_1080_2160_5p65_video>;
+	};
+
+	dsi_jdi_hx83112a_1080_2160_5p65_video_display: qcom,dsi-display@24 {
+		label = "dsi_jdi_hx83112a_1080_2160_5p65_video_display";
+		qcom,display-type = "primary";
+
+		qcom,dsi-ctrl-num = <0>;
+		qcom,dsi-phy-num = <0>;
+		qcom,dsi-select-clocks = "mux_byte_clk0", "mux_pixel_clk0";
+
+		qcom,dsi-panel = <&dsi_jdi_hx83112a_1080_2160_5p65_video>;
+	};
+};
+
+&pm8150l_wled {
+	qcom,ovp = <25000>;
+	qcom,fs-current-limit = <20000>;
+	qcom,string-cfg= <3>;
+	/delete-property/   qcom,auto-calibration;
 };
