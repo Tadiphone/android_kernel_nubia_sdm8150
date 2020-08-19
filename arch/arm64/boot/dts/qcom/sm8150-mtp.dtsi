@@ -15,7 +15,10 @@
 
 #include "sm8150-pmic-overlay.dtsi"
 #include "sm8150-sde-display.dtsi"
-#include "sm8150-camera-sensor-mtp.dtsi"
+/* ZTEMT:fengxun modify for camera dtsi --- Start*/
+//#include "sm8150-camera-sensor-mtp.dtsi"
+#include NUBIA_CAMERA_OVERWRITE_DTSI_FILE
+/* ZTEMT:fengxun modify for camera dtsi --- End*/
 #include "sm8150-thermal-overlay.dtsi"
 
 &qupv3_se4_i2c {
